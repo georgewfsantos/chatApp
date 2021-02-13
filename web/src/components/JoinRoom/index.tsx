@@ -1,7 +1,7 @@
 import React, { ChangeEvent, FormEvent, useCallback, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Container, ChatContainer, SubmitButton } from "./styles";
+import { Container, Content } from "./styles";
 
 const JoinRoom: React.FC = () => {
   const history = useHistory();
@@ -44,7 +44,7 @@ const JoinRoom: React.FC = () => {
 
   return (
     <Container>
-      <ChatContainer>
+      <Content>
         <h1>Join</h1>
         <form onSubmit={handleSignIn}>
           <input
@@ -58,12 +58,12 @@ const JoinRoom: React.FC = () => {
             type="Room"
             name="roomTitle"
             onChange={handleRoomTitleChange}
-            placeholder=""
+            placeholder="Room title"
             value={roomTitle}
           />
-          <SubmitButton type="submit">Sign in</SubmitButton>
+          <button type="submit">Sign in</button>
         </form>
-      </ChatContainer>
+      </Content>
     </Container>
   );
 };
