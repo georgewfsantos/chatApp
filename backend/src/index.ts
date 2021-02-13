@@ -7,4 +7,4 @@ const app = express();
 const server = http.createServer(app);
 const io = new socketio.Server(server);
 
-server.listen(5000);
+server.listen(5000, () => console.log("server is running"));
