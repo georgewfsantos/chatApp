@@ -27,19 +27,21 @@ io.on("connection", (socket: Socket) => {
     const { error, user } = addUser({ id: socket.id, userName, roomTitle });
 
     if (error) {
-      return alert(error);
+      return error;
     }
 
-    socket.emit("message", {
-      user: "admin",
-      text: `Welcome to the room ${user?.roomTitle}, ${user?.userName}`,
-    });
-    socket.broadcast.to(user!.roomTitle).emit("message", {
-      user: "admin",
-      text: `${user?.userName} has just joined`,
-    });
+    if (user) {
+      socket.emit("message", {
+        user: "admin",
+        text: `Welcome to the room ${user.roomTitle}, ${user.userName}`,
+      });
+      socket.broadcast.to(user.roomTitle).emit("message", {
+        user: "admin",
+        text: `${user.userName} has just joined.`,
+      });
 
-    socket.join(user!.roomTitle);
+      socket.join(user.roomTitle);
+    }
 
     callback();
   });
@@ -47,15 +49,17 @@ io.on("connection", (socket: Socket) => {
   socket.on("sendMessage", (message: string, callback: () => void) => {
     const user = getUser(socket.id);
 
-    io.to(user!.roomTitle).emit("message", {
-      user: user?.userName,
-      text: message,
-    });
+    if (user) {
+      io.to(user.roomTitle).emit("message", {
+        user: user.userName,
+        text: message,
+      });
+    }
 
     callback();
   });
 
-  socket.on("disconnect", () => {
+  socket.on("user_disconnect", () => {
     console.log("user has disconnected from the app");
   });
 });
