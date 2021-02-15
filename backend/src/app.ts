@@ -1,9 +1,11 @@
 import express from "express";
-import socketio from "socket.io";
+import socketio, { Socket } from "socket.io";
 import http from "http";
-// import cors from "cors";
+import cors from "cors";
 
 import routes from "./routes";
+
+import { addUser, getUser, removeUser, getRoomUsers } from "./utils/users";
 
 interface SocketParameters {
   userName: string;
@@ -11,7 +13,7 @@ interface SocketParameters {
 }
 
 const app = express();
-// app.use(cors());
+app.use(cors());
 
 const server = http.createServer(app);
 const io = new socketio.Server(server, {
@@ -20,11 +22,37 @@ const io = new socketio.Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("a new user has connected to the app");
+io.on("connection", (socket: Socket) => {
+  socket.on("join", ({ userName, roomTitle }: SocketParameters, callback) => {
+    const { error, user } = addUser({ id: socket.id, userName, roomTitle });
 
-  socket.on("join", ({ userName, roomTitle }: SocketParameters) => {
-    console.log(userName, roomTitle);
+    if (error) {
+      return alert(error);
+    }
+
+    socket.emit("message", {
+      user: "admin",
+      text: `Welcome to the room ${user?.roomTitle}, ${user?.userName}`,
+    });
+    socket.broadcast.to(user!.roomTitle).emit("message", {
+      user: "admin",
+      text: `${user?.userName} has just joined`,
+    });
+
+    socket.join(user!.roomTitle);
+
+    callback();
+  });
+
+  socket.on("sendMessage", (message: string, callback: () => void) => {
+    const user = getUser(socket.id);
+
+    io.to(user!.roomTitle).emit("message", {
+      user: user?.userName,
+      text: message,
+    });
+
+    callback();
   });
 
   socket.on("disconnect", () => {
