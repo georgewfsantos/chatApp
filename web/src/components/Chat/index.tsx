@@ -29,17 +29,10 @@ const Chat: React.FC = () => {
     setUserName(routeParams.userName);
     setRoomTitle(routeParams.roomTitle);
 
-    socket.emit(
-      "join",
-      {
-        userName: String(userName),
-        roomTitle: String(roomTitle),
-      },
-      () => {}
-    );
+    socket.emit("join", { userName, roomTitle }, () => {});
 
     return () => {
-      socket.emit("user_disconnect");
+      socket.emit("disconnection");
 
       socket.off();
     };
@@ -82,7 +75,7 @@ const Chat: React.FC = () => {
       <Content>
         <textarea
           value={message}
-          onChange={(event) => setMessage(event.target.value)}
+          onChange={handleInputChange}
           onKeyPress={handleEnterKeyPress}
         ></textarea>
       </Content>
