@@ -8,7 +8,7 @@ import React, {
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 
-import { Container, Content } from "./styles";
+import { Container, Content, Wrapper } from "./styles";
 interface JoinRoomRouteParams {
   roomTitle: string;
   userName: string;
@@ -24,44 +24,12 @@ const Chat: React.FC = () => {
   const routeParams = useParams<JoinRoomRouteParams>();
 
   useEffect(() => {
-    socket = io("localhost:3333");
+    socket = io("http://localhost:3333");
 
-    setUserName(routeParams.userName);
-    setRoomTitle(routeParams.roomTitle);
-
-    socket.emit("join", { userName, roomTitle }, () => {});
-
-    return () => {
-      socket.emit("disconnection");
-
-      socket.off();
-    };
-  }, [roomTitle, routeParams.roomTitle, routeParams.userName, userName]);
-
-  useEffect(() => {
     socket.on("message", (message: string) => {
       setMessages([...messages, message]);
     });
   }, [messages]);
-
-  const sendMessage = useCallback(
-    (event: KeyboardEvent) => {
-      event.preventDefault();
-
-      if (message) {
-        socket.emit("sendMessage", message, () => setMessage(""));
-      }
-    },
-    [message]
-  );
-
-  console.log(message, messages);
-
-  const handleEnterKeyPress = useCallback(
-    (event: KeyboardEvent<HTMLTextAreaElement>) =>
-      event.key === "Enter" ? sendMessage(event) : null,
-    [sendMessage]
-  );
 
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -70,16 +38,27 @@ const Chat: React.FC = () => {
     []
   );
 
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === "Enter") {
+        socket.emit("inputMessage", message);
+      }
+    },
+    [message]
+  );
+
   return (
-    <Container>
-      <Content>
-        <textarea
-          value={message}
-          onChange={handleInputChange}
-          onKeyPress={handleEnterKeyPress}
-        ></textarea>
-      </Content>
-    </Container>
+    <Wrapper>
+      <Container>
+        <Content>
+          <textarea
+            value={message}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+          ></textarea>
+        </Content>
+      </Container>
+    </Wrapper>
   );
 };
 
