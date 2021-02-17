@@ -12,6 +12,7 @@ export default createGlobalStyle`
     body {
       background: #121214;
       -webkit-font-smoothing: antialiased;
+
     } 
     
     body, input, textarea, button {
@@ -26,12 +27,13 @@ export default createGlobalStyle`
     }
     button {
       cursor: pointer;
-      background: #38ff9b;
+      background:  #f36161;
       font-weight: 500;
       transition: background-color 0.2s;
+      color: #fff;
     }
 
     button:hover {
-      background-color: ${shade(0.2, "#38ff9b")};
+      background-color: ${shade(0.08, "#f36161")};
     }
 `;
