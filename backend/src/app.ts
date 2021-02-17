@@ -7,7 +7,7 @@ import routes from "./routes";
 
 import { addUser, getUser, removeUser, getRoomUsers } from "./utils/users";
 
-interface SocketParameters {
+interface User {
   userName: string;
   roomTitle: string;
 }
@@ -22,45 +22,28 @@ const io = new socketio.Server(server, {
   },
 });
 
-io.on("connection", (socket: Socket) => {
-  socket.on("join", ({ userName, roomTitle }: SocketParameters, callback) => {
-    const { error, user } = addUser({ id: socket.id, userName, roomTitle });
+/* 
+- socket.emit => to the connecting client ( the user);
+- socket.broadcast => to all clients but the one connecting;
+-io.emit => to all clients 
+*/
 
-    if (error) {
-      return error;
-    }
+// upon new client connection:
 
-    if (user) {
-      socket.emit("message", {
-        user: "admin",
-        text: `Welcome to the room ${user.roomTitle}, ${user.userName}`,
-      });
-      socket.broadcast.to(user.roomTitle).emit("message", {
-        user: "admin",
-        text: `${user.userName} has just joined.`,
-      });
+io.on("connection", (socket) => {
+  socket.emit("message", "Welcome to the room");
 
-      socket.join(user.roomTitle);
-    }
+  // warn all other users when a new user connects
+  socket.broadcast.emit("message", "A new user has joined");
 
-    callback();
+  // runs when user disconnects
+  socket.on("disconnect", () => {
+    io.emit("message", "The user has left");
   });
 
-  socket.on("sendMessage", (message: string, callback: () => void) => {
-    const user = getUser(socket.id);
-
-    if (user) {
-      io.to(user.roomTitle).emit("message", {
-        user: user.userName,
-        text: message,
-      });
-    }
-
-    callback();
-  });
-
-  socket.on("user_disconnect", () => {
-    console.log("user has disconnected from the app");
+  // Listen to the chatMessage event from client
+  socket.on("inputMessage", (message: string) => {
+    io.emit("message", message);
   });
 });
 
