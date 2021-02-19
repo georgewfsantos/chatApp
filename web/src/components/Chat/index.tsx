@@ -4,57 +4,79 @@ import React, {
   useEffect,
   useState,
   KeyboardEvent,
+  useRef,
 } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { FiMessageSquare, FiUsers } from "react-icons/fi";
+import { format } from "date-fns";
+import { v4 as uuidv4 } from "uuid";
 
 import Message from "../Chat/Message";
 
 import { Container, Content, Wrapper } from "./styles";
-interface JoinRoomRouteParams {
+interface LocationParams {
   roomTitle: string;
   userName: string;
+}
+
+export interface MessageFormat {
+  id: string;
+  user: string;
+  text: string;
+  time: string;
 }
 
 let socket: Socket;
 
 const Chat: React.FC = () => {
   const history = useHistory();
-  const [userName, setUserName] = useState("");
-  const [roomTitle, setRoomTitle] = useState("");
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
-  const routeParams = useParams<JoinRoomRouteParams>();
+  const chatWindowRef = useRef<HTMLDivElement>(null);
+  /* const [userName, setUserName] = useState("");
+  const [roomTitle, setRoomTitle] = useState(""); */
+  const [message, setMessage] = useState<MessageFormat>({} as MessageFormat);
+  const [inputValue, setInputValue] = useState("");
+  const [messages, setMessages] = useState<MessageFormat[]>([]);
+
+  const location = useLocation<LocationParams>();
+
+  const { userName, roomTitle } = location.state;
 
   useEffect(() => {
     socket = io("http://localhost:3333");
 
-    socket.on("message", (welcomeUserMessage: string) => {
-      setMessages((state) => [...state, welcomeUserMessage]);
+    socket.on("message", (generalMessage: MessageFormat) => {
+      setMessages((state) => [...state, generalMessage]);
     });
 
-    socket.on("sendMessage", (sentMessage: string) => {
-      setMessages((state) => [...state, sentMessage]);
+    socket.on("sendMessage", (sentMessage: MessageFormat) => {
+      setMessages((state) => [...state, { ...sentMessage, user: userName }]);
     });
-  }, []);
+  }, [userName]);
 
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      setMessage(event.target.value);
+      setInputValue((state) => event.target.value);
     },
     []
   );
 
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
-      if (event.key === "Enter") {
-        socket.emit("inputMessage", message);
+      if (event.key === "Enter" && inputValue) {
+        socket.emit("inputMessage", {
+          id: uuidv4(),
+          user: String(userName),
+          text: inputValue,
+          time: format(new Date(), "h:mm a"),
+        });
 
-        setMessage("");
+        setMessage((state) => ({ ...state, text: message.text }));
+
+        setInputValue("");
       }
     },
-    [message]
+    [inputValue, message.text, userName]
   );
 
   const handleLeaveRoom = useCallback(() => {
@@ -83,17 +105,17 @@ const Chat: React.FC = () => {
                 <FiUsers size={20} />
                 <strong>Users</strong>
               </li>
-              <li className="user-name">Me</li>
+              <li className="user-name">{userName}</li>
             </ul>
-            <div className="chat-window">
-              {messages.map((msg, index) => (
+            <div className="chat-window" ref={chatWindowRef}>
+              {messages.map((msg: MessageFormat, index) => (
                 <Message key={index} message={msg} />
               ))}
             </div>
           </div>
           <div className="user-input">
             <input
-              value={message}
+              value={inputValue}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
             ></input>

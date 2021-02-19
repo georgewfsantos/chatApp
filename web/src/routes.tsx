@@ -10,7 +10,7 @@ const Routes: React.FC = () => {
   return (
     <Switch>
       <Route path="/" exact component={JoinRoom} />
-      <Route path="/chat/:user/:room" component={Chat} />
+      <Route path="/chat" component={Chat} />
     </Switch>
   );
 };

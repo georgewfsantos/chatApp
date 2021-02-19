@@ -37,7 +37,10 @@ const JoinRoom: React.FC = () => {
         return;
       }
 
-      history.push(`/chat/${userName}/${roomTitle}`);
+      history.push({
+        pathname: "/chat",
+        state: { userName, roomTitle },
+      });
     },
     [history, roomTitle, userName]
   );

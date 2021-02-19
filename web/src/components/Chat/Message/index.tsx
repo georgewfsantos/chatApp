@@ -1,18 +1,21 @@
 import React from "react";
 
+import { MessageFormat } from "../index";
+
 import { Container } from "./styles";
 
 interface MessageProps {
-  message: string;
+  message: MessageFormat;
 }
 
 const Message: React.FC<MessageProps> = ({ message }) => {
   return (
     <Container>
       <p>
-        <span>RandomUser</span>2:00am
+        <span>{message.user}</span>
+        {message.time}
       </p>
-      <p>{message}</p>
+      <p>{message.text}</p>
     </Container>
   );
 };

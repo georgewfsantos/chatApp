@@ -91,6 +91,9 @@ export const Content = styled.div`
       display: flex;
       flex-direction: column;
       align-items: center;
+      max-height: 562px;
+      overflow-y: scroll;
+      scroll-behavior: smooth;
     }
   }
 
