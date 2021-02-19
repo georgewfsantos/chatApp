@@ -5,7 +5,7 @@ import React, {
   useState,
   KeyboardEvent,
 } from "react";
-import { useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { FiMessageSquare, FiUsers } from "react-icons/fi";
 
@@ -20,6 +20,7 @@ interface JoinRoomRouteParams {
 let socket: Socket;
 
 const Chat: React.FC = () => {
+  const history = useHistory();
   const [userName, setUserName] = useState("");
   const [roomTitle, setRoomTitle] = useState("");
   const [message, setMessage] = useState("");
@@ -30,6 +31,7 @@ const Chat: React.FC = () => {
     socket = io("http://localhost:3333");
 
     socket.on("message", (message: string) => {
+      setMessages([...messages, message]);
       console.log(message);
     });
   }, []);
@@ -45,11 +47,20 @@ const Chat: React.FC = () => {
     (event: KeyboardEvent) => {
       if (event.key === "Enter") {
         socket.emit("inputMessage", message);
-        setMessages([...messages, message]);
+        socket.on("sendMessage", (message: string) => {
+          console.log(message);
+          setMessages(["test"]);
+        });
+
+        setMessage("");
       }
     },
-    [message, messages]
+    [message]
   );
+
+  const handleLeaveRoom = useCallback(() => {
+    history.push("/");
+  }, [history]);
 
   return (
     <Wrapper>
@@ -59,7 +70,7 @@ const Chat: React.FC = () => {
             <p>
               <h2>ChatApp</h2>
             </p>
-            <button onClick={() => {}}>Leave</button>
+            <button onClick={handleLeaveRoom}>Leave</button>
           </div>
 
           <div className="chat">
@@ -76,8 +87,8 @@ const Chat: React.FC = () => {
               <li className="user-name">Me</li>
             </ul>
             <div className="chat-window">
-              {messages.map((msg) => (
-                <Message message={msg} />
+              {messages.map((msg, index) => (
+                <Message key={index} message={msg} />
               ))}
             </div>
           </div>
