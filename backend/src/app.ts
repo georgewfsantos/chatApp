@@ -43,7 +43,8 @@ io.on("connection", (socket) => {
 
   // Listen to the chatMessage event from client
   socket.on("inputMessage", (message: string) => {
-    io.emit("message", message);
+    io.emit("sendMessage", message);
+    console.log(message);
   });
 });
 
