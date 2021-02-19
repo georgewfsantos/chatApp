@@ -30,9 +30,12 @@ const Chat: React.FC = () => {
   useEffect(() => {
     socket = io("http://localhost:3333");
 
-    socket.on("message", (message: string) => {
-      setMessages([...messages, message]);
-      console.log(message);
+    socket.on("message", (welcomeUserMessage: string) => {
+      setMessages((state) => [...state, welcomeUserMessage]);
+    });
+
+    socket.on("sendMessage", (sentMessage: string) => {
+      setMessages((state) => [...state, sentMessage]);
     });
   }, []);
 
@@ -47,10 +50,6 @@ const Chat: React.FC = () => {
     (event: KeyboardEvent) => {
       if (event.key === "Enter") {
         socket.emit("inputMessage", message);
-        socket.on("sendMessage", (message: string) => {
-          console.log(message);
-          setMessages(["test"]);
-        });
 
         setMessage("");
       }
