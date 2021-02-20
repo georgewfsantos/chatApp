@@ -10,7 +10,6 @@ import { useHistory, useLocation } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { FiMessageSquare, FiUsers } from "react-icons/fi";
 import { format } from "date-fns";
-import { v4 as uuidv4 } from "uuid";
 
 import Message from "../Chat/Message";
 
@@ -43,7 +42,6 @@ let socket: Socket;
 const Chat: React.FC = () => {
   const history = useHistory();
   const chatWindowRef = useRef<HTMLDivElement>(null);
-
   const [users, setUsers] = useState<User[]>([]);
   const [room, setRoom] = useState<string>("");
   const [message, setMessage] = useState<MessageFormat>({} as MessageFormat);
@@ -76,6 +74,12 @@ const Chat: React.FC = () => {
     });
   }, [roomTitle, userName]);
 
+  useEffect(() => {
+    return () => {
+      socket.close();
+    };
+  }, []);
+
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       setInputValue((state) => event.target.value);
@@ -102,7 +106,7 @@ const Chat: React.FC = () => {
   );
 
   const handleLeaveRoom = useCallback(() => {
-    history.push("/");
+    history.goBack();
   }, [history]);
 
   return (
@@ -120,7 +124,7 @@ const Chat: React.FC = () => {
             <ul className="sidebar">
               <li>
                 <FiMessageSquare size={20} />
-                <strong>Room Info:</strong>
+                <strong>Room:</strong>
               </li>
               <li className="room">{room}</li>
               <li>
@@ -131,12 +135,14 @@ const Chat: React.FC = () => {
                 <li className="user-name">{user.userName}</li>
               ))}
             </ul>
+
             <div className="chat-window" ref={chatWindowRef}>
               {messages.map((msg: MessageFormat) => (
                 <Message key={msg.id} message={msg} />
               ))}
             </div>
           </div>
+
           <div className="user-input">
             <input
               value={inputValue}
