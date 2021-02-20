@@ -20,6 +20,17 @@ interface LocationParams {
   userName: string;
 }
 
+interface User {
+  id: string;
+  userName: string;
+  roomTitle: string;
+}
+
+interface RoomUsers {
+  room: string;
+  users: User[];
+}
+
 export interface MessageFormat {
   id: string;
   user: string;
@@ -32,8 +43,9 @@ let socket: Socket;
 const Chat: React.FC = () => {
   const history = useHistory();
   const chatWindowRef = useRef<HTMLDivElement>(null);
-  /* const [userName, setUserName] = useState("");
-  const [roomTitle, setRoomTitle] = useState(""); */
+
+  const [users, setUsers] = useState<User[]>([]);
+  const [room, setRoom] = useState<string>("");
   const [message, setMessage] = useState<MessageFormat>({} as MessageFormat);
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<MessageFormat[]>([]);
@@ -45,14 +57,24 @@ const Chat: React.FC = () => {
   useEffect(() => {
     socket = io("http://localhost:3333");
 
+    socket.emit("joinRoom", { userName, roomTitle });
+
     socket.on("message", (generalMessage: MessageFormat) => {
       setMessages((state) => [...state, generalMessage]);
     });
 
     socket.on("sendMessage", (sentMessage: MessageFormat) => {
-      setMessages((state) => [...state, { ...sentMessage, user: userName }]);
+      setMessages((state) => [
+        ...state,
+        { ...sentMessage, user: sentMessage.user },
+      ]);
     });
-  }, [userName]);
+
+    socket.on("roomUsers", ({ room, users }: RoomUsers) => {
+      setUsers(users);
+      setRoom(room);
+    });
+  }, [roomTitle, userName]);
 
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -65,7 +87,7 @@ const Chat: React.FC = () => {
     (event: KeyboardEvent) => {
       if (event.key === "Enter" && inputValue) {
         socket.emit("inputMessage", {
-          id: uuidv4(),
+          id: socket.id,
           user: String(userName),
           text: inputValue,
           time: format(new Date(), "h:mm a"),
@@ -100,16 +122,18 @@ const Chat: React.FC = () => {
                 <FiMessageSquare size={20} />
                 <strong>Room Info:</strong>
               </li>
-              <li className="room">Tennis</li>
+              <li className="room">{room}</li>
               <li>
                 <FiUsers size={20} />
                 <strong>Users</strong>
               </li>
-              <li className="user-name">{userName}</li>
+              {users.map((user) => (
+                <li className="user-name">{user.userName}</li>
+              ))}
             </ul>
             <div className="chat-window" ref={chatWindowRef}>
-              {messages.map((msg: MessageFormat, index) => (
-                <Message key={index} message={msg} />
+              {messages.map((msg: MessageFormat) => (
+                <Message key={msg.id} message={msg} />
               ))}
             </div>
           </div>

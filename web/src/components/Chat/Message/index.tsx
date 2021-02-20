@@ -11,11 +11,11 @@ interface MessageProps {
 const Message: React.FC<MessageProps> = ({ message }) => {
   return (
     <Container>
-      <p>
+      <p className="message-info">
         <span>{message.user}</span>
         {message.time}
       </p>
-      <p>{message.text}</p>
+      <p className="message-text">{message.text}</p>
     </Container>
   );
 };
