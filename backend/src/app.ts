@@ -9,7 +9,8 @@ import routes from "./routes";
 
 import { addUser, getUser, removeUser, getRoomUsers } from "./utils/users";
 
-interface User {
+interface JoinRoomValues {
+  id: string;
   userName: string;
   roomTitle: string;
 }
@@ -40,35 +41,67 @@ const io = new socketio.Server(server, {
 // upon new client connection:
 
 io.on("connection", (socket) => {
-  socket.emit("message", {
-    id: uuidv4(),
-    user: "ChatBot",
-    text: "Welcome, user !",
-    time: format(new Date(), "h:mm a"),
-  });
+  // runs when user submits userName and roomTitle
+  socket.on("joinRoom", ({ userName, roomTitle }: JoinRoomValues) => {
+    const addedUser = addUser({ id: socket.id, userName, roomTitle });
 
-  // warn all other users when a new user connects
-  socket.broadcast.emit("message", {
-    id: uuidv4(),
-    user: "ChatBot",
-    text: "A new user has joined",
-    time: format(new Date(), "h:mm a"),
-  });
+    const { user } = addedUser;
 
-  // runs when user disconnects
-  socket.on("disconnect", () => {
-    io.emit("disconnectMessage", {
-      id: uuidv4(),
-      user: "ChatBot",
-      text: "User has left",
-      time: format(new Date(), "h:mm a"),
-    });
+    if (user) {
+      socket.join(user?.roomTitle);
+
+      // emit welcome message
+      socket.emit("message", {
+        id: uuidv4(),
+        user: "ChatBot",
+        text: `Welcome, ${user?.userName}`,
+        time: format(new Date(), "h:mm a"),
+      });
+
+      // warn all other users when a new user connects
+      socket.broadcast.to(user?.roomTitle).emit("message", {
+        id: uuidv4(),
+        user: "ChatBot",
+        text: `${user?.userName} has joined`,
+        time: format(new Date(), "h:mm a"),
+      });
+
+      // users and room info
+      io.to(user.roomTitle).emit("roomUsers", {
+        room: user.roomTitle,
+        users: getRoomUsers(user.roomTitle),
+      });
+    }
   });
 
   // Listen to the chatMessage event from client
   socket.on("inputMessage", (message: Message) => {
-    io.emit("sendMessage", message);
-    console.log(message);
+    const user = getUser(socket.id);
+
+    if (user) {
+      io.to(user?.roomTitle).emit("sendMessage", message);
+      console.log(message);
+    }
+  });
+
+  // runs when user disconnects
+  socket.on("disconnect", () => {
+    const user = removeUser(socket.id);
+
+    if (user) {
+      io.to(user.roomTitle).emit("message", {
+        id: user.id,
+        user: "ChatBot",
+        text: `${user.userName} has left`,
+        time: format(new Date(), "h:mm a"),
+      });
+
+      // users and room info
+      io.to(user.roomTitle).emit("roomUsers", {
+        room: user.roomTitle,
+        users: getRoomUsers(user.roomTitle),
+      });
+    }
   });
 });
 
