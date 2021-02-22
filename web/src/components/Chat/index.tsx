@@ -106,7 +106,7 @@ const Chat: React.FC = () => {
   );
 
   const handleLeaveRoom = useCallback(() => {
-    history.goBack();
+    history.push("/");
   }, [history]);
 
   return (
@@ -148,6 +148,7 @@ const Chat: React.FC = () => {
               value={inputValue}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
+              placeholder="Type message here"
             ></input>
           </div>
         </Content>

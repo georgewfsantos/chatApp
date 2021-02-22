@@ -94,6 +94,20 @@ export const Content = styled.div`
       max-height: 562px;
       overflow-y: scroll;
       scroll-behavior: smooth;
+
+      &::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #fff;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #ea4949;
+        border-radius: 20px;
+        border: 3px solid #f5f5f5;
+      }
     }
   }
 
