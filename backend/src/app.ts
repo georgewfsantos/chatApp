@@ -54,7 +54,7 @@ io.on("connection", (socket) => {
       socket.emit("message", {
         id: uuidv4(),
         user: "ChatBot",
-        text: `Welcome, ${user?.userName}`,
+        text: `Welcome, @${user?.userName}`,
         time: format(new Date(), "h:mm a"),
       });
 
@@ -62,7 +62,7 @@ io.on("connection", (socket) => {
       socket.broadcast.to(user?.roomTitle).emit("message", {
         id: uuidv4(),
         user: "ChatBot",
-        text: `${user?.userName} has joined`,
+        text: `@${user?.userName} has joined`,
         time: format(new Date(), "h:mm a"),
       });
 
@@ -92,7 +92,7 @@ io.on("connection", (socket) => {
       io.to(user.roomTitle).emit("message", {
         id: user.id,
         user: "ChatBot",
-        text: `${user.userName} has left`,
+        text: `@${user.userName} has left`,
         time: format(new Date(), "h:mm a"),
       });
 

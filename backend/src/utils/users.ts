@@ -7,9 +7,6 @@ interface User {
 const users: User[] = [];
 
 const addUser = ({ id, userName, roomTitle }: User) => {
-  userName = userName.trim().toLowerCase();
-  roomTitle = roomTitle.trim().toLowerCase();
-
   const userNameIsTaken = users.find(
     (user) => user.userName === userName && user.roomTitle === roomTitle
   );
