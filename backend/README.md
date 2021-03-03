@@ -6,4 +6,4 @@ This is a a small server for the chat application, where user can join by typing
 
 - Once you're inside the backend directory in your terminal, run `yarn` or `npm install`, according to the package manager you're using. This command will install all the necessary dependencies to run the project.
 
-- Finally, run `yarn dev:server` or `npm run dev:server` to run the server. This server is used to communicate with the web interface, so when using the web interface, this has to running simultaneously.
+- Finally, run `yarn dev:server` or `npm run dev:server` to run the server. This server is used to communicate with the web interface, so when using the web interface, this has to be running simultaneously.
