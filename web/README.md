@@ -4,6 +4,8 @@ This is a small chat application, where users can join by typing a name for the 
 ## To run the web project :
 ### `yarn` ou `npm install`
 
+- Before running the web project, make sure the server is running. All the instructions for running the server are inside the 'backend' directory.
+
 - After cloning the repository, in your terminal, inside the root directory, run the command `yarn` or `npm install`, according to the package manager you're using. This command will install all the necessary dependencies to run the project. 
 
 - Finally, run  `yarn start` or `npm start` to open the project in the browser.
